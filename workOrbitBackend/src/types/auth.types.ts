@@ -6,6 +6,7 @@ export interface RegisterRequest {
   username: string;
   password: string;
   confirm_password: string;
+  role: 'owner' | 'admin' | 'manager' | 'member';
 }
 
 export interface LoginRequest {

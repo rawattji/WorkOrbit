@@ -22,6 +22,7 @@ export class AuthController {
         username: Joi.string().required().min(3).max(30).alphanum(),
         password: Joi.string().required().min(8).max(128),
         confirm_password: Joi.string().required().valid(Joi.ref('password')),
+        role: Joi.string().valid('owner', 'admin', 'manager', 'member').required()
       });
 
       const { error, value } = schema.validate(req.body);
