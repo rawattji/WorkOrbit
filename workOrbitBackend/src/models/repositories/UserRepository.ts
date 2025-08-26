@@ -40,7 +40,7 @@ export class UserRepository extends BaseRepository<UserEntity> {
     const userWithId = {
       user_id: uuidv4(),
       ...userData,
-      role: userData.role || 'owner',
+      role: userData.role || 'member',
       is_verified: false,
       created_at: new Date(),
       updated_at: new Date()
