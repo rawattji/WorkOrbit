@@ -34,31 +34,31 @@ export const ALLOWED_PARENT: Record<EntityType, EntityType | null> = {
 
 // ---------- Core domain types ----------
 export interface BoardEntity {
-  // DB/internal fields
-  entityId: string;           // UUID (entity_id)
-  publicId: string;           // M_xxx | P_xxx | S_xxx | T_xxx
+  entityId: string;
+  publicId: string;
   type: EntityType;
   name: string;
   description?: string | null;
-  room?: string | null;       // team id/name depending on your design
-  createdBy: string;          // user_id
-  assignedTo?: string | null; // user_id
-  startDate?: string | null;  // ISO date
-  endDate?: string | null;    // ISO date
+  room?: string | null;
+  createdBy: string;
+  assignedTo?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   estimateHours?: number | null;
   sprintId?: string | null;
   workflow: Workflow;
-  parentId?: string | null;   // UUID of parent (board_entities.entity_id)
+  parentId?: string | null;
   childrenCountOpen: number;
   childrenCountTotal: number;
-  status?: string;            // derived from workflow (can be same as workflow)
+  status?: string;
   metadata?: Record<string, unknown>;
-
-  // bookkeeping
-  version: number;            // optimistic locking
+  workspaceId: string;
+  departmentId?: string | null;
+  teamId?: string | null;
+  version: number;
   isDeleted: boolean;
-  createdAt: string;          // ISO datetime
-  updatedAt: string;          // ISO datetime
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface EntityHistory {
@@ -77,17 +77,20 @@ export interface CreateEntityDTO {
   name: string;
   description?: string | null;
   room?: string | null;
-  createdBy: string;       // allow null if no user in context
+  createdBy: string;
   assignedTo?: string | null;
   startDate?: string | null;
   endDate?: string | null;
-  estimateHours?: number | null;  // either a number or null
+  estimateHours?: number | null;
   sprintId?: string | null;
   workflow?: Workflow;
   parentPublicId?: string | null;
   parentId?: string | null;
   metadata?: Record<string, unknown>;
   publicId?: string;
+  workspaceId: string;
+  departmentId?: string | null;
+  teamId?: string | null;
 }
 
 // Patch/Update (partial)
@@ -104,36 +107,30 @@ export interface UpdateEntityDTO {
   parentPublicId?: string | null;
   parentId?: string | null;
   metadata?: Record<string, unknown>;
-  // optimistic locking (optional)
   expectedVersion?: number;
-  // drag/drop optional ordering
-  newPosition?: number;          // reordering inside a column
-
-  // ✅ Optional publicId (for cases like batch updates)
+  newPosition?: number;
   publicId?: string;
+  workspaceId?: string;
+  departmentId?: string | null;
+  teamId?: string | null;
 }
 
 // Querying the board
 export interface BoardQuery {
-  // search & filters
-  search?: string;               // name/description/publicId
+  search?: string;
   type?: EntityType | 'any';
   room?: string;
   assignedTo?: string;
   sprintId?: string;
   workflow?: Workflow | 'any';
-
-  // paging (for large datasets)
-  limit?: number;                // default reasonable
-  offset?: number;               // default 0
-
-  // view mode: which titles to show rows for
-  // 'auto' means: backend decides lowest-level view (story if tasks exist, else project, else mission)
+  limit?: number;
+  offset?: number;
   viewType?: Extract<EntityType, 'mission' | 'project' | 'story'> | 'auto';
-
-  // title filtering: allow asking for specific titles by ids
-  titlePublicIds?: string[];     // if provided, restrict rows to these titles
-  includeOtherTasks?: boolean;   // default true
+  titlePublicIds?: string[];
+  includeOtherTasks?: boolean;
+  workspaceId?: string;
+  departmentId?: string;
+  teamId?: string;
 }
 
 // Board row & response shapes (what Controller returns)

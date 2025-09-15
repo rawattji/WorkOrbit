@@ -14,13 +14,33 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('workorbit_token');
+    const activeWorkspaceId = localStorage.getItem('activeWorkspaceId');
+    const activeDepartmentId = localStorage.getItem('activeDepartmentId');
+    const activeTeamId = localStorage.getItem('activeTeamId');
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // ✅ Normalize values: only set non-empty strings, else set empty
+    config.headers['x-active-workspace-id'] =
+      activeWorkspaceId && activeWorkspaceId !== 'null' && activeWorkspaceId !== 'undefined'
+        ? activeWorkspaceId
+        : '';
+    config.headers['x-active-department-id'] =
+      activeDepartmentId && activeDepartmentId !== 'null' && activeDepartmentId !== 'undefined'
+        ? activeDepartmentId
+        : '';
+    config.headers['x-active-team-id'] =
+      activeTeamId && activeTeamId !== 'null' && activeTeamId !== 'undefined'
+        ? activeTeamId
+        : '';
+
     return config;
   },
   (error) => Promise.reject(error)
 );
+
 
 // Response interceptor to handle errors
 // api.interceptors.response.use(
