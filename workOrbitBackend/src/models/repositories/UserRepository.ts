@@ -52,4 +52,26 @@ export class UserRepository extends BaseRepository<UserEntity> {
   async verifyUser(user_id: string): Promise<UserEntity | null> {
     return this.update({ user_id }, { is_verified: true } as any);
   }
+
+  async findTeammates(workspaceId: string, departmentId: string | null, teamId: string | null) {
+    let sql = `
+      SELECT u.id, u.name, u.email
+      FROM users u
+      JOIN user_workspace uw ON uw.user_id = u.id
+      WHERE uw.workspace_id = $1
+    `;
+    const params: any[] = [workspaceId];
+
+    if (departmentId) {
+      sql += ` AND uw.department_id = $${params.length + 1}`;
+      params.push(departmentId);
+    }
+    if (teamId) {
+      sql += ` AND uw.team_id = $${params.length + 1}`;
+      params.push(teamId);
+    }
+
+    const res = await this.pool.query(sql, params);
+    return res.rows;
+  }
 }
