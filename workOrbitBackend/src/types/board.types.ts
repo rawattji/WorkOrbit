@@ -60,7 +60,7 @@ export interface BoardEntity {
   sprintId?: string | null;
   workflow: Workflow;
   parentId?: string | null;        // internal UUID
-  parentPublicId?: string | null;  // NEW: parent's external ID (M_/P_/S_)
+  parentPublicId?: string | null;  // parent's external ID (M_/P_/S_)
   childrenCountOpen: number;
   childrenCountTotal: number;
   status?: string;
@@ -69,6 +69,9 @@ export interface BoardEntity {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
+  workspaceId: string;
+  departmentId: string;
+  teamId: string;
 }
 
 export interface CreateEntityDTO {
@@ -87,6 +90,11 @@ export interface CreateEntityDTO {
   parentId?: string | null;
   metadata?: Record<string, unknown>;
   publicId?: string;
+
+  // NEW scope fields
+  workspaceId?: string | null;
+  departmentId?: string | null;
+  teamId?: string | null;
 }
 
 export interface UpdateEntityDTO {
@@ -103,7 +111,11 @@ export interface UpdateEntityDTO {
   parentId?: string | null;
   metadata?: Record<string, unknown>;
   expectedVersion?: number;
+  workspaceId?: string | null;
+  departmentId?: string | null;
+  teamId?: string | null;
 }
+
 
 /* =========================
  * Board view/query shapes
@@ -122,7 +134,11 @@ export interface BoardQuery {
   viewType?: Extract<EntityType, 'mission' | 'project' | 'story'> | 'auto';
   titlePublicIds?: string[];
   includeOtherTasks?: boolean;
+  workspaceId?: string;
+  departmentId?: string;
+  teamId?: string;
 }
+
 
 export interface BoardColumns<T = BoardEntity> {
   inbox: T[];
