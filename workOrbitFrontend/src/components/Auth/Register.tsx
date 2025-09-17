@@ -14,7 +14,7 @@ const Register: React.FC = () => {
     username: '',
     password: '',
     confirm_password: '',
-    role: 'member', // ✅ default role
+    role: 'member',
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -60,19 +60,15 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-    
     setIsLoading(true);
-    
     try {
-      // ✅ Send role to backend as well
       const response = await AuthApi.register(formData);
-      
+
       if (response.success) {
         toast.success('Registration initiated! Please check your email for verification code.');
         localStorage.setItem('pending_verification_email', formData.email);
-        navigate('/verify-otp');
+        navigate('/verify-otp', { state: { email: formData.email } });
       } else {
         toast.error(response.message || 'Registration failed');
       }
@@ -94,9 +90,9 @@ const Register: React.FC = () => {
           </h1>
           <p className="text-gray-300">Create your account to get started</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Names */}
+          {/* First + Last name */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -171,24 +167,25 @@ const Register: React.FC = () => {
             />
           </div>
 
-          {/* ✅ Role Dropdown */}
-         <div>
-          <label className="form-label">
-            <Shield className="w-4 h-4" />
-            Role
-          </label>
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            className="role-select"
-          >
-            <option value="member">Member</option>
-            <option value="manager">Manager</option>
-            <option value="admin">Admin</option>
-            <option value="owner">Owner</option>
-          </select>
-        </div>
+          {/* Role */}
+          <div>
+            <label className="form-label">
+              <Shield className="w-4 h-4" />
+              Role
+            </label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="role-select"
+            >
+              <option value="member">Member</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+              <option value="owner">Owner</option>
+            </select>
+          </div>
+
           {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">

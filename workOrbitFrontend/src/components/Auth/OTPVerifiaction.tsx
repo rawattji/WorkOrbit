@@ -1,6 +1,8 @@
+// src/components/Auth/OTPVerification.tsx
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthApi } from '../../services/api/AuthApi';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const OTPVerification: React.FC = () => {
@@ -8,8 +10,8 @@ const OTPVerification: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
 
-  // Try to get email from location.state first, fallback to localStorage
   const emailFromState = location.state?.email || null;
   const emailFromStorage = localStorage.getItem('pending_verification_email');
   const email = emailFromState || emailFromStorage;
@@ -28,7 +30,6 @@ const OTPVerification: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Call API to verify OTP
       const response = await AuthApi.verifyOTP({ email, otp });
 
       if (!response.success) {
@@ -36,15 +37,14 @@ const OTPVerification: React.FC = () => {
         return;
       }
 
-      // Store token & user
       const token = response.data?.token;
       const user = response.data?.user;
-      if (token) localStorage.setItem('workorbit_token', token);
-      if (user) localStorage.setItem('workorbit_user', JSON.stringify(user));
 
-      // Remove pending email
+      if (token && user) {
+        login(user, token);
+      }
+
       localStorage.removeItem('pending_verification_email');
-
       toast.success('Account verified successfully!');
 
       // Navigate to onboarding wizard
@@ -58,7 +58,6 @@ const OTPVerification: React.FC = () => {
   };
 
   if (!email) {
-    // Session expired UI
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black p-4">
         <div className="text-center">
