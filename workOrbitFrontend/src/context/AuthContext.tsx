@@ -1,9 +1,9 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { User } from '../types/UserTypes';
+import React, { createContext, useContext, useEffect, useReducer, ReactNode } from 'react';
 import { AuthApi } from '../services/api/AuthApi';
+import type { User } from '../types/UserTypes';
 
-interface AuthState {
+type AuthState = {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -11,32 +11,36 @@ interface AuthState {
   activeWorkspaceId: string | null;
   activeDepartmentId: string | null;
   activeTeamId: string | null;
-}
+};
 
 type AuthAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'LOGIN_SUCCESS'; payload: { user: User; token: string } }
   | { type: 'LOGOUT' }
   | { type: 'SET_USER'; payload: User }
-  | { type: 'SET_SCOPE'; payload: { workspaceId?: string | null; departmentId?: string | null; teamId?: string | null } };
+  | {
+      type: 'SET_SCOPE';
+      payload: { workspaceId?: string | null; departmentId?: string | null; teamId?: string | null };
+    };
 
-interface AuthContextType extends AuthState {
+type AuthContextType = AuthState & {
   login: (user: User, token: string) => void;
   logout: () => void;
   setUser: (user: User) => void;
   checkAuth: () => Promise<void>;
   setScope: (scope: { workspaceId?: string | null; departmentId?: string | null; teamId?: string | null }) => void;
-}
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// --- read from either new or legacy key at initialization
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   isLoading: true,
   token: null,
-  // ✅ support both keys (new + legacy)
-  activeWorkspaceId: localStorage.getItem('activeWorkspaceId') || localStorage.getItem('workorbit_workspace_id') || null,
+  activeWorkspaceId:
+    localStorage.getItem('activeWorkspaceId') || localStorage.getItem('workorbit_workspace_id') || null,
   activeDepartmentId: localStorage.getItem('activeDepartmentId') || null,
   activeTeamId: localStorage.getItem('activeTeamId') || null,
 };
@@ -64,9 +68,9 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         user: action.payload,
       };
     case 'SET_SCOPE':
+      // Persist **both** the canonical 'activeWorkspaceId' and legacy 'workorbit_workspace_id'
       if (action.payload.workspaceId !== undefined) {
         if (action.payload.workspaceId) {
-          // ✅ keep both keys in sync
           localStorage.setItem('activeWorkspaceId', action.payload.workspaceId);
           localStorage.setItem('workorbit_workspace_id', action.payload.workspaceId);
         } else {
@@ -74,13 +78,21 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
           localStorage.removeItem('workorbit_workspace_id');
         }
       }
+
       if (action.payload.departmentId !== undefined) {
-        if (action.payload.departmentId) localStorage.setItem('activeDepartmentId', action.payload.departmentId);
-        else localStorage.removeItem('activeDepartmentId');
+        if (action.payload.departmentId) {
+          localStorage.setItem('activeDepartmentId', action.payload.departmentId);
+        } else {
+          localStorage.removeItem('activeDepartmentId');
+        }
       }
+
       if (action.payload.teamId !== undefined) {
-        if (action.payload.teamId) localStorage.setItem('activeTeamId', action.payload.teamId);
-        else localStorage.removeItem('activeTeamId');
+        if (action.payload.teamId) {
+          localStorage.setItem('activeTeamId', action.payload.teamId);
+        } else {
+          localStorage.removeItem('activeTeamId');
+        }
       }
 
       return {
@@ -144,7 +156,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('workorbit_token');
     localStorage.removeItem('workorbit_user');
     localStorage.removeItem('activeWorkspaceId');
-    localStorage.removeItem('workorbit_workspace_id'); // ✅ clear legacy key too
+    localStorage.removeItem('workorbit_workspace_id'); // remove legacy too
     localStorage.removeItem('activeDepartmentId');
     localStorage.removeItem('activeTeamId');
     dispatch({ type: 'LOGOUT' });
